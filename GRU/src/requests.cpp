@@ -11,7 +11,14 @@
 #include <iomanip>
 #include <cstdint>
 #include <bitset>
+#include <simplelogger.hpp>
 using namespace std;
+
+extern std::ostream out(std::cout.rdbuf());
+stringstream mystream;
+extern SimpleLogger newlogger = SimpleLogger(out, "sync");
+SimpleLogger errorlogger = SimpleLogger(cerr);
+SimpleLogger stringlogger = SimpleLogger(mystream);
 
 namespace request
 {
@@ -21,8 +28,7 @@ const uint32_t PACKETS_WO_CONFIRM{1};        // How many packages could be sent 
 const double CONFIRM_TIMEOUT_SEC{0.1};
 string hex_converting(int32_t num)
 {
-    stringstream mystream;
-    mystream << hex << num;
+    stringlogger << hex << num;
     if(num < 0)
     {
         return mystream.str().substr(4);
@@ -36,8 +42,8 @@ string hex_converting(int32_t num)
 void ShowError(CSimpleSocket ss, string s)
 {
 
-    std::cout << " " << s << " : " << " = " << ss.DescribeError() << std::endl;
-    std::cout << " IsSocketValid() = " << ss.IsSocketValid() << std::endl << std::endl;
+    newlogger << " " << s << " : " << " = " << ss.DescribeError() << '\n';
+    newlogger << " IsSocketValid() = " << ss.IsSocketValid() << '\n\n';
 } //ShowError
 
 
@@ -48,26 +54,26 @@ void get_API_version (CActiveSocket& SocketActive){ //This function send API ver
     buf[2] = uint8(0x0C);
     buf[3] = uint8(0x00);
 
-    cout << "GET API VERSION";
-    cout << "SocketActive.Send = " << SocketActive.Send(buf, 4) << endl;
+    newlogger << "GET API VERSION";
+    newlogger << "SocketActive.Send = " << SocketActive.Send(buf, 4) << '\n';
     ShowError(SocketActive, "SocketActive.Send");
 
 
-    cout << "listening..." << endl << endl;
-    cout << "SocketActive.Receive = " << hex <<SocketActive.Receive(MAX_PACKET, buf) << endl;
+    newlogger << "listening..." << '\n\n';
+    newlogger << "SocketActive.Receive = " << hex <<SocketActive.Receive(MAX_PACKET, buf) << '\n';
     ShowError(SocketActive, "SocketActive.Receive");
 
 /// @return number of bytes actually received.
 /// @return of zero means the connection has been shutdown on the other side.
 /// @return of -1 means that an error has occurred.
 
-    cout << "Bytes Received : " ;
+    newlogger << "Bytes Received : " ;
     for(int32_t i=0; i<SocketActive.GetBytesReceived(); i++)
         {
             //cout << " buf[" << ii << "] = " << buf[ii] << " " << endl;
-            cout << hex << buf[i];
+            newlogger << hex << buf[i];
         } //for
-        cout << endl << endl;
+        newlogger << '\n\n';
 }// get_API_version
 
 
@@ -79,26 +85,26 @@ void get_sw_revision(CActiveSocket& SocketActive){ //This function send revision
     buf[2] = uint8(0x0D);
     buf[3] = uint8(0x00);
 
-    cout << "GET SW REVISION";
-    cout << "SocketActive.Send = " << SocketActive.Send(buf, 4) << endl;
+    newlogger << "GET SW REVISION";
+    newlogger << "SocketActive.Send = " << SocketActive.Send(buf, 4) << '\n';
     ShowError(SocketActive, "SocketActive.Send");
 
 
-    cout << "listening..." << endl << endl;
-    cout << "SocketActive.Receive = " << hex <<SocketActive.Receive(MAX_PACKET, buf) << endl;
+    newlogger << "listening..." << '\n\n';
+    newlogger << "SocketActive.Receive = " << hex <<SocketActive.Receive(MAX_PACKET, buf) << '\n';
     ShowError(SocketActive, "SocketActive.Receive");
 
 /// @return number of bytes actually received.
 /// @return of zero means the connection has been shutdown on the other side.
 /// @return of -1 means that an error has occurred.
 
-    cout << "Bytes Received : " ;
+    newlogger << "Bytes Received : " ;
     for(int32_t ii=0; ii<SocketActive.GetBytesReceived(); ii++)
         {
             //cout << " buf[" << ii << "] = " << buf[ii] << " " << endl;
-            cout << hex << buf[ii];
+            newlogger << hex << buf[ii];
         } //for
-        cout << endl << endl;
+        newlogger << '\n\n';
 }//get_sw_revision
 
 void get_gru_state(CActiveSocket& SocketActive){ //This function send request of state gradient amplifier and shows response
@@ -108,42 +114,42 @@ void get_gru_state(CActiveSocket& SocketActive){ //This function send request of
     buf[2] = uint8(0x05);
     buf[3] = uint8(0x00);
 
-    cout << "GET GRU STATE";
-    cout << "SocketActive.Send = " << SocketActive.Send(buf, 4) << endl;
+    newlogger << "GET GRU STATE";
+    newlogger << "SocketActive.Send = " << SocketActive.Send(buf, 4) << '\n';
     ShowError(SocketActive, "SocketActive.Send");
 
 
-    cout << "listening..." << endl << endl;
-    cout << "SocketActive.Receive = " << hex <<SocketActive.Receive(MAX_PACKET, buf) << endl;
+    newlogger << "listening..." << '\n\n';
+    newlogger << "SocketActive.Receive = " << hex <<SocketActive.Receive(MAX_PACKET, buf) << '\n';
     ShowError(SocketActive, "SocketActive.Receive");
 
 /// @return number of bytes actually received.
 /// @return of zero means the connection has been shutdown on the other side.
 /// @return of -1 means that an error has occurred.
 
-    cout << "Bytes Received : " ;
+    newlogger << "Bytes Received : " ;
     for(int32_t ii=0; ii<SocketActive.GetBytesReceived(); ii++)
         {
-            //cout << " buf[" << ii << "] = " << buf[ii] << " " << endl;
-            cout << hex << buf[ii];
+            //cout << " buf[" << ii << "] = " << buf[ii] << " " << '\n';
+            newlogger << hex << buf[ii];
         } //for
-        cout << endl << endl;
+        newlogger << '\n\n';
 
 }//get_gru_state
 
 
 
 void socket_close(CActiveSocket SocketActive){ // This function closes socket
-std::cout << "SocketActive.Close() = " << SocketActive.Close() << std::endl;
+newlogger << "SocketActive.Close() = " << SocketActive.Close() << '\n';
     ShowError(SocketActive, "SocketActive.Close");
-    cout << "closed" << endl;
+    newlogger << "closed" << '\n';
 }
 
 vector<vector<int32_t>> get_nodes(const string& Traject_file_name) {
     vector<vector<int32_t>> nodes;
      ifstream myfile(Traject_file_name);
     if (!myfile.is_open()) { // ��������, ������� �� ������ ����
-        cerr << "Unable to open file\n"; // ����� �� ��������� � �������
+        errorlogger << "Unable to open file\n"; // ����� �� ��������� � �������
     }
     int32_t num1, num2;
     while(myfile >> num1 >> num2) {
@@ -241,7 +247,7 @@ if(need_confirm)
     }
 
 
-    cout << "SocketActive.Send = " << SocketActive.Send(buf, counter) << endl;
+    newlogger << "SocketActive.Send = " << SocketActive.Send(buf, counter) << '\n';
     ShowError(SocketActive, "SocketActive.Send");
 
 }
@@ -344,8 +350,8 @@ void upload_traj(CActiveSocket& SocketActive, vector<vector<int32_t>> nodes){
     switch_func(hexString, counter, buf);
     counter+=4;
 
-    cout << "UPLOADING TRAJECTORY";
-    cout << "SocketActive.Send = " << SocketActive.Send(buf, 12) << endl;
+    newlogger << "UPLOADING TRAJECTORY";
+    newlogger << "SocketActive.Send = " << SocketActive.Send(buf, 12) << '\n';
     ShowError(SocketActive, "SocketActive.Send");
 
     int32_t nodes_cnt = nodes.size();
@@ -372,7 +378,7 @@ void upload_traj(CActiveSocket& SocketActive, vector<vector<int32_t>> nodes){
         uploaded_nums.pop_back();
 
         if (segment_status[seg_num] != -2){
-            cout << "Repeating upload segment" << seg_num << "with status" <<segment_status[seg_num] <<endl;
+            newlogger << "Repeating upload segment" << seg_num << "with status" <<segment_status[seg_num] << '\n\n';
         }//if
 
         //����������� �� ������������� ������?
@@ -411,10 +417,10 @@ void download_traject (CActiveSocket &SocketActive, int32_t points_cnt)
     buf[6] = uint8(0x00);
     buf[7] = uint8(0x00);
     counter+=8;
-    cout<< hex << '\t' << points_cnt<<endl;
+    newlogger << hex << '\t' << points_cnt << '\n';
     switch_func(hex_converting(points_cnt), counter, buf);
-    cout << "DOWNLOADING TRAJECTORY";
-    cout << "SocketActive.Send = " << SocketActive.Send(buf, 12) << endl;
+    newlogger << "DOWNLOADING TRAJECTORY";
+    newlogger << "SocketActive.Send = " << SocketActive.Send(buf, 12) << '\n\n';
     ShowError(SocketActive, "SocketActive.Send");
     uint32_t expected_packets_cnt = points_cnt / NODES_PER_PACKET;
     if (points_cnt % NODES_PER_PACKET != 0)
@@ -424,30 +430,31 @@ void download_traject (CActiveSocket &SocketActive, int32_t points_cnt)
     vector<int32_t> downloaded_segments;
     downloaded_segments.assign(expected_packets_cnt, 0);
     points.assign(points_cnt, 0);
-    cout << "listening..." << endl << endl;
-    cout << "SocketActive.Receive = " << hex <<SocketActive.Receive(MAX_PACKET, buf) << endl;
+    newlogger << "listening..." << '';
+    newlogger << "SocketActive.Receive = " << hex <<SocketActive.Receive(MAX_PACKET, buf) << '\n';
     ShowError(SocketActive, "SocketActive.Receive");
 
 /// @return number of bytes actually received.
 /// @return of zero means the connection has been shutdown on the other side.
 /// @return of -1 means that an error has occurred.
 
-    cout << "Bytes Received : " ;
+    newlogger << "Bytes Received : " ;
     for(int32_t ii=0; ii<SocketActive.GetBytesReceived(); ii++)
         {
             //cout << " buf[" << ii << "] = " << buf[ii] << " " << endl;
-            cout << hex << buf[ii];
+            newlogger << hex << buf[ii];
         } //for
-        cout << endl << endl;
+        newlogger << '\n\n';
 
     ofstream outFile("data.txt");
+    SimpleLogger filelogger = SimpleLogger(outFile);
     if(!outFile.is_open())
     {
-        cerr << "Error open file" <<endl;
+        errorlogger << "Error open file" << '\n';
     }
     for(int32_t ii=0; ii<SocketActive.GetBytesReceived(); ii++)
         {
-            outFile << buf[ii] << endl;
+            filelogger << buf[ii] << '\n';
         } //for
         outFile.close();
 }
